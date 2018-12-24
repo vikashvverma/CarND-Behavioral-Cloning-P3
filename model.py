@@ -13,17 +13,20 @@ from sklearn.model_selection import train_test_split
 
 path = "data"
 
+# Get all tehe images from CSV
 samples = []
 with open("{}/driving_log.csv".format(path)) as csvfile:
   reader = csv.reader(csvfile)
   for line in reader:  
     samples.append(line)
-    
+   
+# Read image from path
 def process_image(img_path):
     filename = img_path.split("/")[-1]
     filepath = "{}/IMG/{}".format(path, filename) 
     return cv2.imread(filepath)
 
+# Define generator for batch processing
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
@@ -78,9 +81,11 @@ def generator(samples, batch_size=32):
             yield shuffle(X_train, y_train)
 
 
+# Split data into training and validation set
 train_samples, validation_samples = train_test_split(samples, test_size=0.3)
 
 batch_size=32
+
 # compile and train the model using the generator function
 train_generator = generator(train_samples, batch_size)
 validation_generator = generator(validation_samples, batch_size)
@@ -107,4 +112,5 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= int(len(train_samples)/batch_size), 
                     validation_data=validation_generator, nb_val_samples=int(len(validation_samples)/batch_size), nb_epoch=3)
+# Save the model
 model.save("model.h5")
